@@ -1,94 +1,36 @@
-version: '3.8'
+name: distributed-research-db
 
 services:
-  sqlserver1:
+  sqlserver-p1:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql_p1
+    container_name: research_db_p1
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong!Pass123
+      - MSSQL_SA_PASSWORD=YourStrong@Pass123
       - MSSQL_PID=Developer
     ports:
-      - "1433:1433"
+      - "14331:1433"
     volumes:
-      - sqlserver1_data:/var/opt/mssql
-      - ./sql-scripts:/sql-scripts
+      - ./data/p1:/var/opt/mssql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-      - db_network
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong!Pass123 -C -Q 'SELECT 1' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      - research-network
 
-  sqlserver2:
+  sqlserver-p2:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql_p2
+    container_name: research_db_p2
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong!Pass123
+      - MSSQL_SA_PASSWORD=YourStrong@Pass123
       - MSSQL_PID=Developer
     ports:
-      - "1434:1433"
+      - "14332:1433"
     volumes:
-      - sqlserver2_data:/var/opt/mssql
-      - ./sql-scripts:/sql-scripts
+      - ./data/p2:/var/opt/mssql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-      - db_network
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong!Pass123 -C -Q 'SELECT 1' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  # Init container for P1
-  init-sqlserver1:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: init_mssql_p1
-    depends_on:
-      sqlserver1:
-        condition: service_healthy
-    volumes:
-      - ./sql-scripts:/sql-scripts
-    networks:
-      - db_network
-    command: >
-      bash -c '
-      echo "Waiting for SQL Server P1...";
-      sleep 10;
-      echo "Executing init script for P1...";
-      /opt/mssql-tools18/bin/sqlcmd -S sqlserver1 -U sa -P YourStrong!Pass123 -C -i /sql-scripts/init-p1.sql;
-      echo "P1 initialization completed!";
-      '
-    restart: "no"
-
-  # Init container for P2
-  init-sqlserver2:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: init_mssql_p2
-    depends_on:
-      sqlserver2:
-        condition: service_healthy
-    volumes:
-      - ./sql-scripts:/sql-scripts
-    networks:
-      - db_network
-    command: >
-      bash -c '
-      echo "Waiting for SQL Server P2...";
-      sleep 10;
-      echo "Executing init script for P2...";
-      /opt/mssql-tools18/bin/sqlcmd -S sqlserver2 -U sa -P YourStrong!Pass123 -C -i /sql-scripts/init-p2.sql;
-      echo "P2 initialization completed!";
-      '
-    restart: "no"
-
-volumes:
-  sqlserver1_data:
-  sqlserver2_data:
+      - research-network
 
 networks:
-  db_network:
+  research-network:
     driver: bridge

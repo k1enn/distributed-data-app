@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.research.distributed.controller.CRUDController"
+            styleClass="main-container">
+
+    <top>
+        <VBox spacing="10" styleClass="control-panel">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+
+            <Label fx:id="titleLabel" text="Data Management" styleClass="label-header"/>
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="refreshButton" text="Refresh" styleClass="button"
+                        onAction="#handleRefresh"/>
+                <Button fx:id="addButton" text="Add New" styleClass="button button-primary"
+                        onAction="#handleAdd"/>
+                <Button fx:id="editButton" text="Edit" styleClass="button"
+                        onAction="#handleEdit" disable="true"/>
+                <Button fx:id="deleteButton" text="Delete" styleClass="button"
+                        onAction="#handleDelete" disable="true" style="-fx-background-color: #FFB4B4;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="15" styleClass="content-panel">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+
+            <TableView fx:id="dataTable" styleClass="table-view" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="No data available. Click 'Add New' to create a record."/>
+                </placeholder>
+            </TableView>
+
+            <VBox fx:id="formContainer" spacing="10" styleClass="form-container">
+                <!-- Form fields will be added dynamically -->
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>

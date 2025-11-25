@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.research.distributed.controller.MainController"
+            styleClass="main-container">
+
+    <top>
+        <VBox spacing="15" styleClass="control-panel">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+
+            <Label text="Distributed Research Database System" styleClass="label-header"/>
+
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <Label text="Transparency Level:" styleClass="transparency-selector"/>
+                <RadioButton fx:id="level1Radio" text="Level 1 (Fragment Transparency)"
+                             styleClass="radio-button" selected="true">
+                    <toggleGroup><ToggleGroup fx:id="transparencyGroup"/></toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="level2Radio" text="Level 2 (Location Transparency)"
+                             styleClass="radio-button" toggleGroup="$transparencyGroup"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="content-scroll">
+            <VBox spacing="20" styleClass="content-panel">
+                <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+
+                <!-- Query 1 Section -->
+                <TitledPane text="Query 1: Projects with External Participants"
+                            styleClass="section-pane" expanded="true" collapsible="true">
+                    <VBox spacing="15">
+                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Group ID:" styleClass="label"/>
+                            <TextField fx:id="groupIdField" promptText="Enter group ID (e.g., NC01)"
+                                       styleClass="text-field" prefWidth="300"/>
+                            <Button fx:id="query1Button" text="Execute Query"
+                                    styleClass="button button-primary" onAction="#handleQuery1"/>
+                        </HBox>
+
+                        <TableView fx:id="query1Table" styleClass="table-view" prefHeight="200">
+                            <columns>
+                                <TableColumn fx:id="query1ProjectIdCol" text="Project ID" prefWidth="150"/>
+                                <TableColumn fx:id="query1ProjectNameCol" text="Project Name" prefWidth="350"/>
+                                <TableColumn fx:id="query1GroupIdCol" text="Group ID" prefWidth="150"/>
+                            </columns>
+                            <placeholder>
+                                <Label text="Execute query to see results"/>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Query 2 Section -->
+                <TitledPane text="Query 2: Update Department"
+                            styleClass="section-pane" collapsible="true">
+                    <VBox spacing="15">
+                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Group ID:" styleClass="label"/>
+                            <TextField fx:id="updateGroupIdField" promptText="NC01"
+                                       styleClass="text-field" prefWidth="200"/>
+                            <Label text="New Department:" styleClass="label"/>
+                            <ComboBox fx:id="departmentCombo" styleClass="combo-box" prefWidth="150">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="P1"/>
+                                        <String fx:value="P2"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                            <Button fx:id="query2Button" text="Update"
+                                    styleClass="button" onAction="#handleQuery2"/>
+                        </HBox>
+
+                        <Label fx:id="query2Result" styleClass="result-label" wrapText="true"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Query 3 Section -->
+                <TitledPane text="Query 3: Projects Without Participants"
+                            styleClass="section-pane" collapsible="true">
+                    <VBox spacing="15">
+                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Button fx:id="query3Button" text="Get All Projects Without Participants"
+                                    styleClass="button button-primary" onAction="#handleQuery3"/>
+                        </HBox>
+
+                        <TableView fx:id="query3Table" styleClass="table-view" prefHeight="200">
+                            <columns>
+                                <TableColumn fx:id="query3ProjectIdCol" text="Project ID" prefWidth="150"/>
+                                <TableColumn fx:id="query3ProjectNameCol" text="Project Name" prefWidth="400"/>
+                                <TableColumn fx:id="query3GroupIdCol" text="Group ID" prefWidth="150"/>
+                            </columns>
+                            <placeholder>
+                                <Label text="Execute query to see results"/>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+                </TitledPane>
+
+                <!-- CRUD Section -->
+                <TitledPane text="CRUD Operations" styleClass="section-pane" collapsible="true">
+                    <VBox spacing="15">
+                        <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                        <HBox spacing="20">
+                            <Button text="Manage Groups" styleClass="button"
+                                    onAction="#openGroupCRUD" prefWidth="200"/>
+                            <Button text="Manage Employees" styleClass="button"
+                                    onAction="#openEmployeeCRUD" prefWidth="200"/>
+                            <Button text="Manage Projects" styleClass="button"
+                                    onAction="#openProjectCRUD" prefWidth="200"/>
+                            <Button text="Manage Participation" styleClass="button"
+                                    onAction="#openParticipationCRUD" prefWidth="200"/>
+                        </HBox>
+                    </VBox>
+                </TitledPane>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

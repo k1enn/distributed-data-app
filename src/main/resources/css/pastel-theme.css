@@ -1,0 +1,305 @@
+/* Root variables with pastel colors */
+.root {
+    -fx-font-size: 16px;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+
+    /* Pastel color palette */
+    -pastel-blue: #AED9E0;
+    -pastel-pink: #FAE3D9;
+    -pastel-green: #BBDED6;
+    -pastel-yellow: #FFE1A8;
+    -pastel-purple: #D5C6E0;
+    -pastel-orange: #FFD6A5;
+    -pastel-gray: #E8E8E8;
+    -pastel-light-blue: #E8F4F8;
+    -pastel-light-pink: #FFF5F7;
+    -text-dark: #2C3E50;
+    -text-secondary: #34495E;
+}
+
+/* Main container */
+.main-container {
+    -fx-background-color: -pastel-light-pink;
+}
+
+/* Control panel at top */
+.control-panel {
+    -fx-background-color: linear-gradient(to right, -pastel-blue, -pastel-purple);
+    -fx-padding: 20 30 20 30;
+}
+
+/* Content panel */
+.content-panel {
+    -fx-background-color: #FAFAFA;
+    -fx-padding: 20;
+}
+
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.content-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Labels */
+.label {
+    -fx-font-size: 18px;
+    -fx-text-fill: -text-dark;
+    -fx-padding: 6;
+}
+
+.label-header {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 1, 1);
+}
+
+.transparency-selector {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.result-label {
+    -fx-font-size: 18px;
+    -fx-text-fill: -text-dark;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+}
+
+/* Text fields and combo boxes */
+.text-field, .combo-box {
+    -fx-font-size: 18px;
+    -fx-padding: 12;
+    -fx-background-color: white;
+    -fx-border-color: -pastel-blue;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.text-field:focused, .combo-box:focused {
+    -fx-border-color: -pastel-purple;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.combo-box .list-cell {
+    -fx-font-size: 18px;
+    -fx-padding: 8;
+}
+
+/* Buttons */
+.button {
+    -fx-font-size: 18px;
+    -fx-padding: 12 24 12 24;
+    -fx-background-color: -pastel-green;
+    -fx-text-fill: -text-dark;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.button:hover {
+    -fx-background-color: derive(-pastel-green, -15%);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.button:pressed {
+    -fx-background-color: derive(-pastel-green, -25%);
+}
+
+.button:disabled {
+    -fx-opacity: 0.5;
+}
+
+.button-primary {
+    -fx-background-color: -pastel-purple;
+}
+
+.button-primary:hover {
+    -fx-background-color: derive(-pastel-purple, -15%);
+}
+
+.button-primary:pressed {
+    -fx-background-color: derive(-pastel-purple, -25%);
+}
+
+/* Radio buttons */
+.radio-button {
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+    -fx-padding: 8;
+}
+
+.radio-button .radio {
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: -pastel-yellow;
+}
+
+.radio-button .dot {
+    -fx-background-color: -text-dark;
+    -fx-pref-width: 12px;
+    -fx-pref-height: 12px;
+}
+
+/* Titled panes (sections) */
+.titled-pane {
+    -fx-font-size: 20px;
+}
+
+.titled-pane > .title {
+    -fx-background-color: -pastel-light-blue;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 15;
+    -fx-font-weight: bold;
+}
+
+.titled-pane > .title > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.titled-pane > .title > .arrow-button .arrow {
+    -fx-background-color: -text-dark;
+}
+
+.titled-pane > .content {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-border-color: -pastel-gray;
+    -fx-border-width: 0 2 2 2;
+    -fx-border-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 10 10;
+}
+
+.titled-pane:expanded > .title {
+    -fx-background-color: -pastel-purple;
+}
+
+/* Table view */
+.table-view {
+    -fx-font-size: 16px;
+    -fx-background-color: white;
+    -fx-border-color: -pastel-gray;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.table-view .column-header {
+    -fx-background-color: -pastel-pink;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 8 12 8;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -pastel-pink;
+}
+
+.table-view .table-cell {
+    -fx-padding: 12 8 12 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: white;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #F8F8F8;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: -pastel-blue;
+}
+
+.table-view .table-row-cell:selected .table-cell {
+    -fx-text-fill: -text-dark;
+}
+
+.table-view .placeholder .label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #888888;
+}
+
+/* Scroll bars */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -pastel-purple;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: -pastel-purple;
+}
+
+/* Alerts and dialogs */
+.alert {
+    -fx-font-size: 16px;
+}
+
+.alert .content.label {
+    -fx-font-size: 16px;
+    -fx-padding: 10;
+}
+
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-padding: 20;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -pastel-light-blue;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-font-size: 16px;
+    -fx-padding: 10 20 10 20;
+}
+
+/* Form container */
+.form-container {
+    -fx-background-color: -pastel-light-blue;
+    -fx-padding: 20;
+    -fx-background-radius: 10;
+}
+
+/* Section pane */
+.section-pane {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);
+}
+
+/* Accordion */
+.accordion {
+    -fx-background-color: transparent;
+}
+
+.accordion > .titled-pane > .title {
+    -fx-background-color: -pastel-light-blue;
+}
+
+/* Tooltip */
+.tooltip {
+    -fx-font-size: 14px;
+    -fx-background-color: -text-dark;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 8;
+}
