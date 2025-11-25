@@ -55,6 +55,9 @@
                 <version>0.0.8</version>
                 <configuration>
                     <!-- FIX: Use correct package name -->
+                    <options>
+                        <option>--enable-native-access=javafx.graphics</option>
+                    </options>
                     <mainClass>com.k1en.MainApp</mainClass>
                 </configuration>
             </plugin>

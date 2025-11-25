@@ -52,7 +52,8 @@ public class MainApp extends Application {
 
         // Create main layout
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(20));
+        root.setStyle("-fx-background-color: #ECF0F1;");
 
         // Top: Query section with transparency controls
         VBox topSection = createQuerySection();
@@ -64,13 +65,14 @@ public class MainApp extends Application {
 
         // Bottom: Query results
         txtResults = new TextArea();
-        txtResults.setPrefHeight(120);
+        txtResults.setPrefHeight(240);
         txtResults.setEditable(false);
         txtResults.setPromptText("Query results will appear here...");
+        txtResults.setStyle("-fx-font-size: 24px; -fx-background-color: #FFFFFF; -fx-border-color: #BDC3C7; -fx-border-width: 2;");
         root.setBottom(txtResults);
 
-        // Create scene
-        Scene scene = new Scene(root, 1200, 750);
+        // Create scene - 2x scale for management application
+        Scene scene = new Scene(root, 2400, 1500);
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(e -> closeDatabase());
         primaryStage.show();
@@ -80,31 +82,53 @@ public class MainApp extends Application {
     }
 
     private VBox createQuerySection() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
-        vbox.setStyle("-fx-background-color: #f8f9fd; -fx-border-color: #f8f9fd; -fx-border-width: 2;");
+        VBox vbox = new VBox(20);
+        vbox.setPadding(new Insets(20));
+        vbox.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #3498DB; -fx-border-width: 3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        // Collapsible header with toggle
+        HBox header = new HBox(15);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setStyle("-fx-cursor: hand; -fx-padding: 10;");
+
+        Label toggleIcon = new Label("▼");
+        toggleIcon.setStyle("-fx-font-size: 28px; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
 
         Label title = new Label("DISTRIBUTED DATABASE QUERIES");
-        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;");
+
+        header.getChildren().addAll(toggleIcon, title);
+
+        // Content container (collapsible)
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(10, 0, 0, 0));
 
         // Query input fields
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setHgap(20);
+        grid.setVgap(20);
 
         Label lblMaNhom = new Label("Mã Nhóm (for queries):");
+        lblMaNhom.setStyle("-fx-font-size: 24px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
         txtMaNhom = new TextField();
         txtMaNhom.setPromptText("NC01");
+        txtMaNhom.setStyle("-fx-font-size: 24px; -fx-pref-height: 50;");
+        txtMaNhom.setPrefWidth(300);
 
         Label lblTenPhong = new Label("Tên Phòng (for Query 2):");
+        lblTenPhong.setStyle("-fx-font-size: 24px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
         txtTenPhong = new TextField();
         txtTenPhong.setPromptText("P2");
+        txtTenPhong.setStyle("-fx-font-size: 24px; -fx-pref-height: 50;");
+        txtTenPhong.setPrefWidth(300);
 
         Label lblTransparency = new Label("Transparency Level:");
+        lblTransparency.setStyle("-fx-font-size: 24px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
         cmbTransparencyLevel = new ComboBox<>();
         cmbTransparencyLevel.getItems().addAll("Level 1: Fragmentation Transparency", "Level 2: Location Transparency");
         cmbTransparencyLevel.setValue("Level 1: Fragmentation Transparency");
-        cmbTransparencyLevel.setPrefWidth(300);
+        cmbTransparencyLevel.setPrefWidth(600);
+        cmbTransparencyLevel.setStyle("-fx-font-size: 24px; -fx-pref-height: 50;");
 
         grid.add(lblMaNhom, 0, 0);
         grid.add(txtMaNhom, 1, 0);
@@ -114,54 +138,77 @@ public class MainApp extends Application {
         grid.add(cmbTransparencyLevel, 1, 2);
 
         // Query buttons
-        HBox buttonBox = new HBox(10);
+        HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(10, 0, 0, 0));
+        buttonBox.setPadding(new Insets(20, 0, 0, 0));
 
         Button btnQuery1 = new Button("Cau 1: Nhom Nghien Cuu 1");
         btnQuery1.setOnAction(e -> handleQuery1());
-        btnQuery1.setStyle("-fx-background-color: #f8f9fd; -fx-text-fill: black; -fx-font-weight: bold;");
-        btnQuery1.setPrefWidth(220);
+        btnQuery1.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 22px; -fx-pref-height: 60; -fx-background-radius: 5;");
+        btnQuery1.setPrefWidth(440);
 
         Button btnQuery2 = new Button("Cau 2: Doi ten phong");
         btnQuery2.setOnAction(e -> handleQuery2());
-        btnQuery2.setStyle("-fx-background-color: #4d4d4d; -fx-text-fill: black; -fx-font-weight: bold;");
-        btnQuery2.setPrefWidth(220);
+        btnQuery2.setStyle("-fx-background-color: #27AE60; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 22px; -fx-pref-height: 60; -fx-background-radius: 5;");
+        btnQuery2.setPrefWidth(440);
 
         Button btnQuery3 = new Button("Cau 3: De an ko ai them gia");
         btnQuery3.setOnAction(e -> handleQuery3());
-        btnQuery3.setStyle("-fx-background-color: #8d8d8d; -fx-text-fill: white; -fx-font-weight: bold;");
-        btnQuery3.setPrefWidth(250);
+        btnQuery3.setStyle("-fx-background-color: #F39C12; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 22px; -fx-pref-height: 60; -fx-background-radius: 5;");
+        btnQuery3.setPrefWidth(500);
 
         Button btnRefreshAll = new Button("Refresh All Tables");
         btnRefreshAll.setOnAction(e -> loadAllData());
-        btnRefreshAll.setStyle("-fx-background-color: #9E9E9E; -fx-text-fill: white;");
+        btnRefreshAll.setStyle("-fx-background-color: #95A5A6; -fx-text-fill: white; -fx-font-size: 22px; -fx-pref-height: 60; -fx-background-radius: 5;");
+        btnRefreshAll.setPrefWidth(400);
 
         buttonBox.getChildren().addAll(btnQuery1, btnQuery2, btnQuery3, btnRefreshAll);
 
-        vbox.getChildren().addAll(title, grid, buttonBox);
+        content.getChildren().addAll(grid, buttonBox);
+
+        // Toggle functionality
+        header.setOnMouseClicked(e -> {
+            if (content.isVisible()) {
+                content.setVisible(false);
+                content.setManaged(false);
+                toggleIcon.setText("▶");
+                toggleIcon.setStyle("-fx-font-size: 28px; -fx-text-fill: #95A5A6; -fx-font-weight: bold;");
+            } else {
+                content.setVisible(true);
+                content.setManaged(true);
+                toggleIcon.setText("▼");
+                toggleIcon.setStyle("-fx-font-size: 28px; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
+            }
+        });
+
+        vbox.getChildren().addAll(header, content);
         return vbox;
     }
 
     private TabPane createTablesTabPane() {
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabPane.setStyle("-fx-font-size: 24px; -fx-background-color: #ECF0F1;");
 
         // Tab 1: NhomNC (Research Groups)
         Tab tabNhomNC = new Tab("Nhóm NC (Research Groups)");
         tabNhomNC.setContent(createNhomNCTab());
+        tabNhomNC.setStyle("-fx-font-size: 24px;");
 
         // Tab 2: NhanVien (Employees)
         Tab tabNhanVien = new Tab("Nhân Viên (Employees)");
         tabNhanVien.setContent(createNhanVienTab());
+        tabNhanVien.setStyle("-fx-font-size: 24px;");
 
         // Tab 3: DeAn (Projects)
         Tab tabDeAn = new Tab("Đề Án (Projects)");
         tabDeAn.setContent(createDeAnTab());
+        tabDeAn.setStyle("-fx-font-size: 24px;");
 
         // Tab 4: ThamGia (Participation)
         Tab tabThamGia = new Tab("Tham Gia (Participation)");
         tabThamGia.setContent(createThamGiaTab());
+        tabThamGia.setStyle("-fx-font-size: 24px;");
 
         tabPane.getTabs().addAll(tabNhomNC, tabNhanVien, tabDeAn, tabThamGia);
         return tabPane;
@@ -169,18 +216,22 @@ public class MainApp extends Application {
 
     private TableView<NhomNC> createTableView() {
         TableView<NhomNC> table = new TableView<>();
+        table.setStyle("-fx-font-size: 22px;");
 
         TableColumn<NhomNC, String> colMaNhom = new TableColumn<>("Mã Nhóm");
         colMaNhom.setCellValueFactory(cellData -> cellData.getValue().maNhomProperty());
-        colMaNhom.setPrefWidth(150);
+        colMaNhom.setPrefWidth(300);
+        colMaNhom.setStyle("-fx-font-size: 22px;");
 
         TableColumn<NhomNC, String> colTenNhom = new TableColumn<>("Tên Nhóm");
         colTenNhom.setCellValueFactory(cellData -> cellData.getValue().tenNhomProperty());
-        colTenNhom.setPrefWidth(300);
+        colTenNhom.setPrefWidth(600);
+        colTenNhom.setStyle("-fx-font-size: 22px;");
 
         TableColumn<NhomNC, String> colTenPhong = new TableColumn<>("Tên Phòng");
         colTenPhong.setCellValueFactory(cellData -> cellData.getValue().tenPhongProperty());
-        colTenPhong.setPrefWidth(150);
+        colTenPhong.setPrefWidth(300);
+        colTenPhong.setStyle("-fx-font-size: 22px;");
 
         table.getColumns().addAll(colMaNhom, colTenNhom, colTenPhong);
         return table;
@@ -694,44 +745,71 @@ public class MainApp extends Application {
     // ==================== TAB CREATION METHODS ====================
 
     private VBox createNhomNCTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
+        VBox vbox = new VBox(20);
+        vbox.setPadding(new Insets(20));
+        vbox.setStyle("-fx-background-color: #ECF0F1;");
 
         // Create table
         tableNhomNC = new TableView<>();
+        tableNhomNC.setStyle("-fx-font-size: 22px;");
         TableColumn<NhomNC, String> colMaNhom = new TableColumn<>("Mã Nhóm");
         colMaNhom.setCellValueFactory(cellData -> cellData.getValue().maNhomProperty());
+        colMaNhom.setPrefWidth(300);
         TableColumn<NhomNC, String> colTenNhom = new TableColumn<>("Tên Nhóm");
         colTenNhom.setCellValueFactory(cellData -> cellData.getValue().tenNhomProperty());
+        colTenNhom.setPrefWidth(600);
         TableColumn<NhomNC, String> colTenPhong = new TableColumn<>("Tên Phòng");
         colTenPhong.setCellValueFactory(cellData -> cellData.getValue().tenPhongProperty());
+        colTenPhong.setPrefWidth(300);
         tableNhomNC.getColumns().addAll(colMaNhom, colTenNhom, colTenPhong);
 
         // CRUD form
         GridPane form = new GridPane();
-        form.setHgap(10);
-        form.setVgap(10);
-        form.setPadding(new Insets(10));
+        form.setHgap(20);
+        form.setVgap(20);
+        form.setPadding(new Insets(20));
+        form.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField txtMa = new TextField();
         txtMa.setPromptText("Mã Nhóm");
+        txtMa.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMa.setPrefWidth(300);
         TextField txtTen = new TextField();
         txtTen.setPromptText("Tên Nhóm");
+        txtTen.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtTen.setPrefWidth(300);
         TextField txtPhong = new TextField();
         txtPhong.setPromptText("Tên Phòng (P1/P2)");
+        txtPhong.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtPhong.setPrefWidth(300);
 
-        form.add(new Label("Mã Nhóm:"), 0, 0);
+        Label lblMa = new Label("Mã Nhóm:");
+        lblMa.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblTen = new Label("Tên Nhóm:");
+        lblTen.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblPhong = new Label("Tên Phòng:");
+        lblPhong.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+
+        form.add(lblMa, 0, 0);
         form.add(txtMa, 1, 0);
-        form.add(new Label("Tên Nhóm:"), 0, 1);
+        form.add(lblTen, 0, 1);
         form.add(txtTen, 1, 1);
-        form.add(new Label("Tên Phòng:"), 0, 2);
+        form.add(lblPhong, 0, 2);
         form.add(txtPhong, 1, 2);
 
-        HBox buttons = new HBox(10);
+        HBox buttons = new HBox(20);
         Button btnAdd = new Button("Add");
+        btnAdd.setStyle("-fx-background-color: #27AE60; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnAdd.setPrefWidth(150);
         Button btnUpdate = new Button("Update");
+        btnUpdate.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnUpdate.setPrefWidth(150);
         Button btnDelete = new Button("Delete");
+        btnDelete.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnDelete.setPrefWidth(150);
         Button btnRefresh = new Button("Refresh");
+        btnRefresh.setStyle("-fx-background-color: #95A5A6; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnRefresh.setPrefWidth(150);
         buttons.getChildren().addAll(btnAdd, btnUpdate, btnDelete, btnRefresh);
 
         // Button handlers
@@ -746,51 +824,72 @@ public class MainApp extends Application {
     }
 
     private VBox createNhanVienTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
+        VBox vbox = new VBox(20);
+        vbox.setPadding(new Insets(20));
+        vbox.setStyle("-fx-background-color: #ECF0F1;");
 
         // Create table
         tableNhanVien = new TableView<>();
+        tableNhanVien.setStyle("-fx-font-size: 22px;");
         TableColumn<NhanVien, String> colMaNV = new TableColumn<>("Mã NV");
         colMaNV.setCellValueFactory(cellData -> cellData.getValue().maNVProperty());
-        colMaNV.setPrefWidth(120);
+        colMaNV.setPrefWidth(240);
         TableColumn<NhanVien, String> colHoTen = new TableColumn<>("Họ Tên");
         colHoTen.setCellValueFactory(cellData -> cellData.getValue().hoTenProperty());
-        colHoTen.setPrefWidth(250);
+        colHoTen.setPrefWidth(500);
         TableColumn<NhanVien, String> colMaNhom = new TableColumn<>("Mã Nhóm");
         colMaNhom.setCellValueFactory(cellData -> cellData.getValue().maNhomProperty());
-        colMaNhom.setPrefWidth(120);
+        colMaNhom.setPrefWidth(240);
         tableNhanVien.getColumns().addAll(colMaNV, colHoTen, colMaNhom);
 
         // CRUD form
         GridPane form = new GridPane();
-        form.setHgap(10);
-        form.setVgap(10);
-        form.setPadding(new Insets(10));
-        form.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #cccccc;");
+        form.setHgap(20);
+        form.setVgap(20);
+        form.setPadding(new Insets(20));
+        form.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField txtMaNV = new TextField();
         txtMaNV.setPromptText("NV001");
+        txtMaNV.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaNV.setPrefWidth(250);
         TextField txtHoTen = new TextField();
         txtHoTen.setPromptText("Nguyễn Văn A");
+        txtHoTen.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtHoTen.setPrefWidth(350);
         TextField txtMaNhomNV = new TextField();
         txtMaNhomNV.setPromptText("NC01");
+        txtMaNhomNV.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaNhomNV.setPrefWidth(250);
 
-        form.add(new Label("Mã NV:"), 0, 0);
+        Label lblMaNV = new Label("Mã NV:");
+        lblMaNV.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblHoTen = new Label("Họ Tên:");
+        lblHoTen.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblMaNhom = new Label("Mã Nhóm:");
+        lblMaNhom.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+
+        form.add(lblMaNV, 0, 0);
         form.add(txtMaNV, 1, 0);
-        form.add(new Label("Họ Tên:"), 2, 0);
+        form.add(lblHoTen, 2, 0);
         form.add(txtHoTen, 3, 0);
-        form.add(new Label("Mã Nhóm:"), 4, 0);
+        form.add(lblMaNhom, 4, 0);
         form.add(txtMaNhomNV, 5, 0);
 
-        HBox buttons = new HBox(10);
-        buttons.setPadding(new Insets(10, 0, 0, 0));
+        HBox buttons = new HBox(20);
+        buttons.setPadding(new Insets(20, 0, 0, 0));
         Button btnAdd = new Button("Add Employee");
+        btnAdd.setStyle("-fx-background-color: #27AE60; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnAdd.setPrefWidth(250);
         Button btnUpdate = new Button("Update Employee");
+        btnUpdate.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnUpdate.setPrefWidth(250);
         Button btnDelete = new Button("Delete Employee");
+        btnDelete.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnDelete.setPrefWidth(250);
         Button btnRefresh = new Button("Refresh");
-        btnAdd.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
-        btnDelete.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        btnRefresh.setStyle("-fx-background-color: #95A5A6; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnRefresh.setPrefWidth(200);
         buttons.getChildren().addAll(btnAdd, btnUpdate, btnDelete, btnRefresh);
 
         // Button handlers
@@ -805,51 +904,72 @@ public class MainApp extends Application {
     }
 
     private VBox createDeAnTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
+        VBox vbox = new VBox(20);
+        vbox.setPadding(new Insets(20));
+        vbox.setStyle("-fx-background-color: #ECF0F1;");
 
         // Create table
         tableDeAn = new TableView<>();
+        tableDeAn.setStyle("-fx-font-size: 22px;");
         TableColumn<DeAn, String> colMaDA = new TableColumn<>("Mã Đề Án");
         colMaDA.setCellValueFactory(cellData -> cellData.getValue().maDAProperty());
-        colMaDA.setPrefWidth(120);
+        colMaDA.setPrefWidth(240);
         TableColumn<DeAn, String> colTenDA = new TableColumn<>("Tên Đề Án");
         colTenDA.setCellValueFactory(cellData -> cellData.getValue().tenDAProperty());
-        colTenDA.setPrefWidth(300);
+        colTenDA.setPrefWidth(600);
         TableColumn<DeAn, String> colMaNhom = new TableColumn<>("Mã Nhóm");
         colMaNhom.setCellValueFactory(cellData -> cellData.getValue().maNhomProperty());
-        colMaNhom.setPrefWidth(120);
+        colMaNhom.setPrefWidth(240);
         tableDeAn.getColumns().addAll(colMaDA, colTenDA, colMaNhom);
 
         // CRUD form
         GridPane form = new GridPane();
-        form.setHgap(10);
-        form.setVgap(10);
-        form.setPadding(new Insets(10));
-        form.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #cccccc;");
+        form.setHgap(20);
+        form.setVgap(20);
+        form.setPadding(new Insets(20));
+        form.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField txtMaDA = new TextField();
         txtMaDA.setPromptText("DA001");
+        txtMaDA.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaDA.setPrefWidth(250);
         TextField txtTenDA = new TextField();
         txtTenDA.setPromptText("Đề Án Nghiên Cứu AI");
+        txtTenDA.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtTenDA.setPrefWidth(400);
         TextField txtMaNhomDA = new TextField();
         txtMaNhomDA.setPromptText("NC01");
+        txtMaNhomDA.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaNhomDA.setPrefWidth(250);
 
-        form.add(new Label("Mã Đề Án:"), 0, 0);
+        Label lblMaDA = new Label("Mã Đề Án:");
+        lblMaDA.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblTenDA = new Label("Tên Đề Án:");
+        lblTenDA.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblMaNhom = new Label("Mã Nhóm:");
+        lblMaNhom.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+
+        form.add(lblMaDA, 0, 0);
         form.add(txtMaDA, 1, 0);
-        form.add(new Label("Tên Đề Án:"), 2, 0);
+        form.add(lblTenDA, 2, 0);
         form.add(txtTenDA, 3, 0);
-        form.add(new Label("Mã Nhóm:"), 4, 0);
+        form.add(lblMaNhom, 4, 0);
         form.add(txtMaNhomDA, 5, 0);
 
-        HBox buttons = new HBox(10);
-        buttons.setPadding(new Insets(10, 0, 0, 0));
+        HBox buttons = new HBox(20);
+        buttons.setPadding(new Insets(20, 0, 0, 0));
         Button btnAdd = new Button("Add Project");
+        btnAdd.setStyle("-fx-background-color: #27AE60; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnAdd.setPrefWidth(230);
         Button btnUpdate = new Button("Update Project");
+        btnUpdate.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnUpdate.setPrefWidth(250);
         Button btnDelete = new Button("Delete Project");
+        btnDelete.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnDelete.setPrefWidth(250);
         Button btnRefresh = new Button("Refresh");
-        btnAdd.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-        btnDelete.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        btnRefresh.setStyle("-fx-background-color: #95A5A6; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnRefresh.setPrefWidth(200);
         buttons.getChildren().addAll(btnAdd, btnUpdate, btnDelete, btnRefresh);
 
         // Button handlers
@@ -864,47 +984,62 @@ public class MainApp extends Application {
     }
 
     private VBox createThamGiaTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
+        VBox vbox = new VBox(20);
+        vbox.setPadding(new Insets(20));
+        vbox.setStyle("-fx-background-color: #ECF0F1;");
 
         // Create table
         tableThamGia = new TableView<>();
+        tableThamGia.setStyle("-fx-font-size: 22px;");
         TableColumn<ThamGia, String> colMaNV = new TableColumn<>("Mã NV");
         colMaNV.setCellValueFactory(cellData -> cellData.getValue().maNVProperty());
-        colMaNV.setPrefWidth(200);
+        colMaNV.setPrefWidth(400);
         TableColumn<ThamGia, String> colMaDA = new TableColumn<>("Mã Đề Án");
         colMaDA.setCellValueFactory(cellData -> cellData.getValue().maDAProperty());
-        colMaDA.setPrefWidth(200);
+        colMaDA.setPrefWidth(400);
         tableThamGia.getColumns().addAll(colMaNV, colMaDA);
 
         // CRUD form
         GridPane form = new GridPane();
-        form.setHgap(10);
-        form.setVgap(10);
-        form.setPadding(new Insets(10));
-        form.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #cccccc;");
+        form.setHgap(20);
+        form.setVgap(20);
+        form.setPadding(new Insets(20));
+        form.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField txtMaNVTG = new TextField();
         txtMaNVTG.setPromptText("NV001");
+        txtMaNVTG.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaNVTG.setPrefWidth(300);
         TextField txtMaDATG = new TextField();
         txtMaDATG.setPromptText("DA001");
+        txtMaDATG.setStyle("-fx-font-size: 22px; -fx-pref-height: 50;");
+        txtMaDATG.setPrefWidth(300);
 
-        form.add(new Label("Mã NV:"), 0, 0);
+        Label lblMaNV = new Label("Mã NV:");
+        lblMaNV.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+        Label lblMaDA = new Label("Mã Đề Án:");
+        lblMaDA.setStyle("-fx-font-size: 22px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;");
+
+        form.add(lblMaNV, 0, 0);
         form.add(txtMaNVTG, 1, 0);
-        form.add(new Label("Mã Đề Án:"), 2, 0);
+        form.add(lblMaDA, 2, 0);
         form.add(txtMaDATG, 3, 0);
 
-        HBox buttons = new HBox(10);
-        buttons.setPadding(new Insets(10, 0, 0, 0));
+        HBox buttons = new HBox(20);
+        buttons.setPadding(new Insets(20, 0, 0, 0));
         Button btnAdd = new Button("Add Participation");
+        btnAdd.setStyle("-fx-background-color: #F39C12; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnAdd.setPrefWidth(300);
         Button btnDelete = new Button("Delete Participation");
+        btnDelete.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnDelete.setPrefWidth(320);
         Button btnRefresh = new Button("Refresh");
-        btnAdd.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white;");
-        btnDelete.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        btnRefresh.setStyle("-fx-background-color: #95A5A6; -fx-text-fill: white; -fx-font-size: 20px; -fx-pref-height: 50; -fx-background-radius: 5;");
+        btnRefresh.setPrefWidth(200);
         buttons.getChildren().addAll(btnAdd, btnDelete, btnRefresh);
 
         Label note = new Label("Note: Participation is a junction table (no Update needed)");
-        note.setStyle("-fx-font-style: italic; -fx-text-fill: #666;");
+        note.setStyle("-fx-font-style: italic; -fx-text-fill: #7F8C8D; -fx-font-size: 20px;");
 
         // Button handlers
         btnAdd.setOnAction(e -> handleAddThamGia(txtMaNVTG, txtMaDATG));
