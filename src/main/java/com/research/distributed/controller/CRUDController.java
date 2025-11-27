@@ -16,6 +16,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ public class CRUDController implements Initializable {
     @FXML private Button addButton;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
+    @FXML private Button closeButton;
 
     private CRUDService crudService;
     private String entityType;
@@ -194,6 +196,12 @@ public class CRUDController implements Initializable {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             deleteEntity(selected);
         }
+    }
+
+    @FXML
+    private void handleClose() {
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.close();
     }
 
     private void refreshData() {

@@ -6,14 +6,14 @@ import com.research.distributed.exception.DatabaseException;
 import com.research.distributed.exception.FragmentException;
 import com.research.distributed.exception.ValidationException;
 import com.research.distributed.model.DeAn;
+import com.research.distributed.model.NhanVien;
 import com.research.distributed.model.NhomNC;
+import com.research.distributed.model.ThamGia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,18 +120,35 @@ public class QueryService {
     public void updateDepartment(String groupId, String newDepartment, TransparencyLevel level)
             throws DatabaseException, ValidationException {
         try {
-            String oldFragment = connectionManager.getFragmentForGroup(groupId);
-            if (oldFragment == null) {
-                throw new ValidationException("Cannot find group: " + groupId, "groupId", groupId);
+            String oldFragment;
+
+            if (level == TransparencyLevel.FRAGMENT_TRANSPARENCY) {
+                // Level 1: Use hardcoded fragment mapping (user "knows" where data is)
+                oldFragment = connectionManager.getFragmentForGroup(groupId);
+                if (oldFragment == null) {
+                    throw new ValidationException("Cannot determine fragment for group: " + groupId, "groupId", groupId);
+                }
+                // Verify group actually exists in this fragment
+                String dept = getDepartmentForGroup(groupId, oldFragment);
+                if (dept == null) {
+                    throw new ValidationException("Group " + groupId + " not found in expected fragment " + oldFragment,
+                            "groupId", groupId);
+                }
+            } else {
+                // Level 2: Search all fragments to find where group actually is (location transparency)
+                oldFragment = findGroupFragment(groupId);
+                if (oldFragment == null) {
+                    throw new ValidationException("Cannot find group: " + groupId, "groupId", groupId);
+                }
             }
 
             String currentDepartment = getDepartmentForGroup(groupId, oldFragment);
-            if (currentDepartment != null && currentDepartment.equals(newDepartment)) {
+            if (currentDepartment != null && currentDepartment.equalsIgnoreCase(newDepartment)) {
                 throw new ValidationException("Group already in department " + newDepartment,
                         "department", newDepartment);
             }
 
-            String newFragment = newDepartment.equals("P1") ? "p1" : "p2";
+            String newFragment = newDepartment.equalsIgnoreCase("P1") ? "p1" : "p2";
 
             if (oldFragment.equals(newFragment)) {
                 // Just update the department in same fragment
@@ -141,10 +158,31 @@ public class QueryService {
                 migrateGroupBetweenFragments(groupId, oldFragment, newFragment, newDepartment);
             }
 
-            logger.info("Successfully updated department for group {} to {}", groupId, newDepartment);
+            logger.info("Successfully updated department for group {} to {} (Level: {})",
+                    groupId, newDepartment, level);
         } catch (SQLException | FragmentException e) {
             throw new DatabaseException("Error updating department", e);
         }
+    }
+
+    /**
+     * Search all fragments to find where a group actually exists (for Location Transparency)
+     */
+    private String findGroupFragment(String groupId) throws SQLException, FragmentException {
+        for (String fragment : connectionManager.getAllFragments()) {
+            try (Connection conn = connectionManager.getConnection(fragment)) {
+                String sql = String.format("SELECT 1 FROM nhomnc_%s WHERE manhomnc = ?", fragment);
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, groupId);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        logger.info("Found group {} in fragment {}", groupId, fragment);
+                        return fragment;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private String getDepartmentForGroup(String groupId, String fragment)
@@ -179,19 +217,230 @@ public class QueryService {
     private void migrateGroupBetweenFragments(String groupId, String oldFragment,
                                                String newFragment, String newDepartment)
             throws SQLException, FragmentException, DatabaseException {
-        // This is a complex operation that requires:
-        // 1. Get all data for the group from old fragment
-        // 2. Insert into new fragment
-        // 3. Delete from old fragment
-        // All in a coordinated manner
-
         logger.info("Migrating group {} from fragment {} to {}", groupId, oldFragment, newFragment);
 
-        // For simplicity, we'll throw an exception indicating this requires manual migration
-        throw new DatabaseException(
-                "Migration between fragments requires careful handling of all related data. " +
-                        "Please use the CRUD operations to manually migrate group " + groupId +
-                        " from " + oldFragment + " to " + newFragment);
+        Connection oldConn = null;
+        Connection newConn = null;
+
+        try {
+            oldConn = connectionManager.getConnection(oldFragment);
+            newConn = connectionManager.getConnection(newFragment);
+
+            // Disable auto-commit for transaction-like behavior
+            oldConn.setAutoCommit(false);
+            newConn.setAutoCommit(false);
+
+            // Step 1: Fetch all data from old fragment
+            NhomNC group = fetchGroup(oldConn, groupId, oldFragment);
+            if (group == null) {
+                throw new DatabaseException("Group not found: " + groupId);
+            }
+            group.setTenPhong(newDepartment);
+
+            List<NhanVien> employees = fetchEmployeesByGroup(oldConn, groupId, oldFragment);
+            List<DeAn> projects = fetchProjectsByGroup(oldConn, groupId, oldFragment);
+            List<ThamGia> participations = fetchParticipationsByGroup(oldConn, groupId, oldFragment);
+
+            logger.info("Found {} employees, {} projects, {} participations to migrate",
+                    employees.size(), projects.size(), participations.size());
+
+            // Step 2: Clean up any existing data in target fragment (handles retry scenarios)
+            deleteParticipationsByGroup(newConn, groupId, newFragment);
+            deleteProjectsByGroup(newConn, groupId, newFragment);
+            deleteEmployeesByGroup(newConn, groupId, newFragment);
+            deleteGroup(newConn, groupId, newFragment);
+            logger.info("Cleaned up any existing data for group {} in target fragment {}", groupId, newFragment);
+
+            // Step 3: Insert data into new fragment
+            insertGroup(newConn, group, newFragment);
+            for (NhanVien emp : employees) {
+                insertEmployee(newConn, emp, newFragment);
+            }
+            for (DeAn proj : projects) {
+                insertProject(newConn, proj, newFragment);
+            }
+            for (ThamGia tg : participations) {
+                insertParticipation(newConn, tg, newFragment);
+            }
+
+            // Step 4: Delete data from old fragment (in reverse order due to FK constraints)
+            deleteParticipationsByGroup(oldConn, groupId, oldFragment);
+            deleteProjectsByGroup(oldConn, groupId, oldFragment);
+            deleteEmployeesByGroup(oldConn, groupId, oldFragment);
+            deleteGroup(oldConn, groupId, oldFragment);
+
+            // Commit both connections
+            newConn.commit();
+            oldConn.commit();
+
+            logger.info("Successfully migrated group {} from {} to {}", groupId, oldFragment, newFragment);
+
+        } catch (Exception e) {
+            // Rollback on any error
+            if (oldConn != null) {
+                try { oldConn.rollback(); } catch (SQLException ex) { logger.error("Rollback failed", ex); }
+            }
+            if (newConn != null) {
+                try { newConn.rollback(); } catch (SQLException ex) { logger.error("Rollback failed", ex); }
+            }
+            throw new DatabaseException("Migration failed: " + e.getMessage(), e);
+        } finally {
+            // Restore auto-commit and close connections
+            if (oldConn != null) {
+                try { oldConn.setAutoCommit(true); oldConn.close(); } catch (SQLException e) { /* ignore */ }
+            }
+            if (newConn != null) {
+                try { newConn.setAutoCommit(true); newConn.close(); } catch (SQLException e) { /* ignore */ }
+            }
+        }
+    }
+
+    // Helper methods for fetching data
+    private NhomNC fetchGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        String sql = String.format("SELECT manhomnc, tennhomnc, tenphong FROM nhomnc_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new NhomNC(rs.getString("manhomnc"), rs.getString("tennhomnc"), rs.getString("tenphong"));
+            }
+        }
+        return null;
+    }
+
+    private List<NhanVien> fetchEmployeesByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        List<NhanVien> list = new ArrayList<>();
+        String sql = String.format("SELECT manv, hoten, manhomnc FROM nhanvien_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(new NhanVien(rs.getString("manv"), rs.getString("hoten"), rs.getString("manhomnc")));
+            }
+        }
+        return list;
+    }
+
+    private List<DeAn> fetchProjectsByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        List<DeAn> list = new ArrayList<>();
+        String sql = String.format("SELECT mada, tenda, manhomnc FROM dean_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(new DeAn(rs.getString("mada"), rs.getString("tenda"), rs.getString("manhomnc")));
+            }
+        }
+        return list;
+    }
+
+    private List<ThamGia> fetchParticipationsByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        List<ThamGia> list = new ArrayList<>();
+        // Only fetch participations where BOTH the employee AND the project belong to the group
+        String sql = String.format(
+                "SELECT t.manv, t.mada, t.ngaythamgia FROM thamgia_%s t " +
+                "INNER JOIN nhanvien_%s nv ON t.manv = nv.manv " +
+                "INNER JOIN dean_%s d ON t.mada = d.mada " +
+                "WHERE nv.manhomnc = ? AND d.manhomnc = ?", fragment, fragment, fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            stmt.setString(2, groupId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Date date = rs.getDate("ngaythamgia");
+                LocalDate localDate = date != null ? date.toLocalDate() : null;
+                list.add(new ThamGia(rs.getString("manv"), rs.getString("mada"), localDate));
+            }
+        }
+        return list;
+    }
+
+    // Helper methods for inserting data
+    private void insertGroup(Connection conn, NhomNC group, String fragment) throws SQLException {
+        String sql = String.format(
+                "INSERT INTO nhomnc_%s (manhomnc, tennhomnc, tenphong, created_at) VALUES (?, ?, ?, GETDATE())", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, group.getMaHomnc());
+            stmt.setString(2, group.getTenNhomnc());
+            stmt.setString(3, group.getTenPhong());
+            stmt.executeUpdate();
+        }
+    }
+
+    private void insertEmployee(Connection conn, NhanVien emp, String fragment) throws SQLException {
+        String sql = String.format(
+                "INSERT INTO nhanvien_%s (manv, hoten, manhomnc, created_at) VALUES (?, ?, ?, GETDATE())", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, emp.getMaNv());
+            stmt.setString(2, emp.getHoTen());
+            stmt.setString(3, emp.getMaHomnc());
+            stmt.executeUpdate();
+        }
+    }
+
+    private void insertProject(Connection conn, DeAn proj, String fragment) throws SQLException {
+        String sql = String.format(
+                "INSERT INTO dean_%s (mada, tenda, manhomnc, created_at) VALUES (?, ?, ?, GETDATE())", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, proj.getMaDa());
+            stmt.setString(2, proj.getTenDa());
+            stmt.setString(3, proj.getMaHomnc());
+            stmt.executeUpdate();
+        }
+    }
+
+    private void insertParticipation(Connection conn, ThamGia tg, String fragment) throws SQLException {
+        String sql = String.format(
+                "INSERT INTO thamgia_%s (manv, mada, ngaythamgia, created_at) VALUES (?, ?, ?, GETDATE())", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, tg.getMaNv());
+            stmt.setString(2, tg.getMaDa());
+            if (tg.getNgayThamGia() != null) {
+                stmt.setDate(3, Date.valueOf(tg.getNgayThamGia()));
+            } else {
+                stmt.setNull(3, Types.DATE);
+            }
+            stmt.executeUpdate();
+        }
+    }
+
+    // Helper methods for deleting data
+    private void deleteParticipationsByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        // Delete ALL participations that reference either employees OR projects from this group
+        // This is needed because we're about to delete those employees and projects
+        String sql = String.format(
+                "DELETE FROM thamgia_%s WHERE manv IN (SELECT manv FROM nhanvien_%s WHERE manhomnc = ?) " +
+                "OR mada IN (SELECT mada FROM dean_%s WHERE manhomnc = ?)",
+                fragment, fragment, fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            stmt.setString(2, groupId);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void deleteProjectsByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        String sql = String.format("DELETE FROM dean_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void deleteEmployeesByGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        String sql = String.format("DELETE FROM nhanvien_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void deleteGroup(Connection conn, String groupId, String fragment) throws SQLException {
+        String sql = String.format("DELETE FROM nhomnc_%s WHERE manhomnc = ?", fragment);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupId);
+            stmt.executeUpdate();
+        }
     }
 
     /**
