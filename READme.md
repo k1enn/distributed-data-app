@@ -410,6 +410,9 @@ docker-compose up -d
 # Verify Java version (needs 17+)
 java -version
 
+# Switch to java 17 on Arch Linux
+sudo archlinux-java set java-17-openjdk
+
 # Clean and rebuild
 mvn clean compile
 
@@ -429,6 +432,10 @@ This usually means the database doesn't exist yet. Run:
 ## Useful Commands
 
 ```bash
+# Before start
+mkdir -p ./data/p1 ./data/p2
+sudo chown -R 10001:10001 ./data/p1 ./data/p2
+
 # Start everything
 docker-compose up -d && sleep 30 && ./init_database.sh && mvn javafx:run
 
