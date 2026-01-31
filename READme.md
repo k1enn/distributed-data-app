@@ -1,6 +1,7 @@
 # Distributed Research Database System
 
 A JavaFX application demonstrating **horizontal fragmentation** across two MS SQL Server instances using Docker containers.
+<img width="1915" height="1046" alt="image" src="https://github.com/user-attachments/assets/ce690d6e-7291-41b1-83fe-c4d7eae9b03e" />
 
 ---
 
